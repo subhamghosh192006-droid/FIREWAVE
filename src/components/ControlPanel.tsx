@@ -1,4 +1,5 @@
-import { Wind, Droplets, Play, Pause, RotateCcw, RefreshCw, Mountain, Thermometer } from 'lucide-react';
+import React from 'react';
+import { Wind, Droplets, Play, Pause, RotateCcw, Mountain, Thermometer, Radio, Lock, Unlock } from 'lucide-react';
 import type { Scenario } from '../types/fireweave';
 import { sound } from '../services/soundService';
 
@@ -17,8 +18,8 @@ interface ControlPanelProps {
   setIsPlaying: (playing: boolean) => void;
   playSpeed: number;
   setPlaySpeed: (speed: number) => void;
-  isSyncingWeather: boolean;
-  onSyncLiveWeather: () => void;
+  isLiveStreaming: boolean;
+  onToggleLiveStream: () => void;
   liveWeatherStatus: string | null;
   onResetSimulation: () => void;
 }
@@ -38,8 +39,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   setIsPlaying,
   playSpeed,
   setPlaySpeed,
-  isSyncingWeather,
-  onSyncLiveWeather,
+  isLiveStreaming,
+  onToggleLiveStream,
   liveWeatherStatus,
   onResetSimulation,
 }) => {
@@ -102,49 +103,77 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         </div>
       </div>
 
-      {/* Environmental 'What-If' Sandbox */}
+      {/* Environmental Data Feed Box */}
       <div style={{
         background: 'rgba(9, 16, 28, 0.75)',
-        border: '1px solid var(--border-subtle)',
+        border: '1px solid',
+        borderColor: isLiveStreaming ? 'var(--primary-cyan)' : 'var(--border-subtle)',
         borderRadius: '8px',
         padding: '12px',
         display: 'flex',
         flexDirection: 'column',
         gap: '12px',
       }}>
+        {/* Feed Mode Toggle Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span className="font-display" style={{ fontSize: '12px', color: '#fff', fontWeight: 700 }}>
-            WHAT-IF SIMULATION CONTROLS
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Radio size={14} color={isLiveStreaming ? '#00e5ff' : '#889bb5'} />
+            <span className="font-display" style={{ fontSize: '12px', color: '#fff', fontWeight: 700 }}>
+              {isLiveStreaming ? 'LIVE TELEMETRY FEED' : 'MANUAL WHAT-IF OVERRIDE'}
+            </span>
+          </div>
+
           <button
             onClick={() => {
               sound.playClick();
-              onSyncLiveWeather();
+              onToggleLiveStream();
             }}
-            disabled={isSyncingWeather}
             style={{
-              background: 'transparent',
-              border: 'none',
-              color: isSyncingWeather ? '#889bb5' : 'var(--primary-cyan)',
+              background: isLiveStreaming ? 'rgba(0, 229, 255, 0.15)' : 'rgba(255, 171, 64, 0.2)',
+              border: '1px solid',
+              borderColor: isLiveStreaming ? 'var(--primary-cyan)' : '#ffab40',
+              color: isLiveStreaming ? 'var(--primary-cyan)' : '#ffab40',
+              borderRadius: '4px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: '4px',
-              fontSize: '11px',
+              padding: '3px 8px',
+              fontSize: '10px',
               fontFamily: 'var(--font-mono)',
+              fontWeight: 700,
             }}
-            title="Fetch real meteorological data from Open-Meteo API"
+            title={isLiveStreaming ? 'Click to enable manual slider adjustments' : 'Click to lock sliders back to live feed'}
           >
-            <RefreshCw size={12} className={isSyncingWeather ? 'spin-anim' : ''} />
-            <span>{isSyncingWeather ? 'Syncing...' : 'Live Sync'}</span>
+            {isLiveStreaming ? <Lock size={11} /> : <Unlock size={11} />}
+            <span>{isLiveStreaming ? 'LIVE FEED ON' : 'MANUAL MODE'}</span>
           </button>
         </div>
 
-        {liveWeatherStatus && (
-          <div style={{ fontSize: '10px', color: '#00e676', fontFamily: 'var(--font-mono)' }}>
-            ✓ {liveWeatherStatus}
-          </div>
-        )}
+        {/* Live Feed Status Indicator Banner */}
+        <div style={{
+          background: isLiveStreaming ? 'rgba(0, 230, 118, 0.1)' : 'rgba(255, 171, 64, 0.1)',
+          border: `1px solid ${isLiveStreaming ? 'rgba(0, 230, 118, 0.3)' : 'rgba(255, 171, 64, 0.3)'}`,
+          borderRadius: '5px',
+          padding: '6px 8px',
+          fontSize: '10px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+        }}>
+          <span style={{
+            width: '6px',
+            height: '6px',
+            borderRadius: '50%',
+            background: isLiveStreaming ? '#00e676' : '#ffab40',
+            boxShadow: `0 0 6px ${isLiveStreaming ? '#00e676' : '#ffab40'}`,
+          }} />
+          <span style={{ color: isLiveStreaming ? '#00e676' : '#ffab40', fontFamily: 'var(--font-mono)' }}>
+            {isLiveStreaming
+              ? (liveWeatherStatus || 'Streaming Open-Meteo & NASA Telemetry')
+              : 'Manual adjustment active. Live feed paused.'}
+          </span>
+        </div>
 
         {/* Ambient Temperature Display */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -160,7 +189,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
             <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <Wind size={13} color="#00e5ff" /> Wind Velocity
+              <Wind size={13} color="#00e5ff" /> Wind Velocity {isLiveStreaming && '🔒'}
             </span>
             <span className="font-mono" style={{ fontSize: '12px', color: '#00e5ff', fontWeight: 600 }}>
               {windSpeed} km/h
@@ -172,8 +201,13 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             max="80"
             step="2"
             value={windSpeed}
+            disabled={isLiveStreaming}
             onChange={(e) => {
-              setWindSpeed(Number(e.target.value));
+              if (!isLiveStreaming) setWindSpeed(Number(e.target.value));
+            }}
+            style={{
+              opacity: isLiveStreaming ? 0.45 : 1,
+              cursor: isLiveStreaming ? 'not-allowed' : 'pointer',
             }}
           />
         </div>
@@ -182,7 +216,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
             <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-              Wind Bearing Origin
+              Wind Bearing Origin {isLiveStreaming && '🔒'}
             </span>
             <span className="font-mono" style={{ fontSize: '12px', color: '#ffab40', fontWeight: 600 }}>
               {windDir}° (Heading {(windDir + 180) % 360}°)
@@ -194,8 +228,13 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             max="359"
             step="5"
             value={windDir}
+            disabled={isLiveStreaming}
             onChange={(e) => {
-              setWindDir(Number(e.target.value));
+              if (!isLiveStreaming) setWindDir(Number(e.target.value));
+            }}
+            style={{
+              opacity: isLiveStreaming ? 0.45 : 1,
+              cursor: isLiveStreaming ? 'not-allowed' : 'pointer',
             }}
           />
           {/* Quick 8 Cardinal Buttons */}
@@ -203,9 +242,12 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             {cardinalPresets.map((card) => (
               <button
                 key={card.label}
+                disabled={isLiveStreaming}
                 onClick={() => {
-                  sound.playClick();
-                  setWindDir(card.deg);
+                  if (!isLiveStreaming) {
+                    sound.playClick();
+                    setWindDir(card.deg);
+                  }
                 }}
                 style={{
                   background: Math.abs(windDir - card.deg) < 22 ? 'rgba(0, 229, 255, 0.25)' : 'rgba(20, 32, 50, 0.6)',
@@ -216,7 +258,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   fontSize: '9px',
                   fontFamily: 'var(--font-mono)',
                   padding: '3px 0',
-                  cursor: 'pointer',
+                  cursor: isLiveStreaming ? 'not-allowed' : 'pointer',
+                  opacity: isLiveStreaming ? 0.45 : 1,
                 }}
               >
                 {card.label}
@@ -229,7 +272,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
             <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <Droplets size={13} color="#69f0ae" /> Fuel Humidity
+              <Droplets size={13} color="#69f0ae" /> Fuel Humidity {isLiveStreaming && '🔒'}
             </span>
             <span className="font-mono" style={{ fontSize: '12px', color: '#69f0ae', fontWeight: 600 }}>
               {humidity}% RH
@@ -241,8 +284,13 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             max="70"
             step="1"
             value={humidity}
+            disabled={isLiveStreaming}
             onChange={(e) => {
-              setHumidity(Number(e.target.value));
+              if (!isLiveStreaming) setHumidity(Number(e.target.value));
+            }}
+            style={{
+              opacity: isLiveStreaming ? 0.45 : 1,
+              cursor: isLiveStreaming ? 'not-allowed' : 'pointer',
             }}
           />
         </div>

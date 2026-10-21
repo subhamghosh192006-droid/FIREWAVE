@@ -1,4 +1,4 @@
-import { Flame, Wind, Droplets, Volume2, VolumeX, Presentation, FileText } from 'lucide-react';
+import { Flame, Wind, Droplets, Volume2, VolumeX, FileText } from 'lucide-react';
 import type { Scenario } from '../types/fireweave';
 import { sound } from '../services/soundService';
 
@@ -12,7 +12,6 @@ interface HeaderProps {
   temp: number;
   isMuted: boolean;
   onToggleMute: () => void;
-  onOpenPitchGuide: () => void;
   onOpenReport: () => void;
 }
 
@@ -26,7 +25,6 @@ export const Header: React.FC<HeaderProps> = ({
   temp,
   isMuted,
   onToggleMute,
-  onOpenPitchGuide,
   onOpenReport,
 }) => {
   // Convert wind degrees to cardinal direction
@@ -137,19 +135,6 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Quick Action Navigation Buttons */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <button
-          className="btn-tactical"
-          onClick={() => {
-            sound.playClick();
-            onOpenPitchGuide();
-          }}
-          title="Hackathon Pitch Presentation & Judge Explanation Mode"
-          style={{ background: 'rgba(0, 229, 255, 0.12)', borderColor: 'var(--border-active)' }}
-        >
-          <Presentation size={15} color="#00e5ff" />
-          <span>PITCH GUIDE</span>
-        </button>
-
         <button
           className="btn-tactical"
           onClick={() => {

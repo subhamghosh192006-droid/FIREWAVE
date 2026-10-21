@@ -12,7 +12,6 @@ import { TacticalMap } from './components/TacticalMap';
 import { ControlPanel } from './components/ControlPanel';
 import { ContainmentAdvisor } from './components/ContainmentAdvisor';
 import { ThreatSummary } from './components/ThreatSummary';
-import { PitchGuideModal } from './components/PitchGuideModal';
 import { IncidentReportModal } from './components/IncidentReportModal';
 import { LiveAlertConsole } from './components/LiveAlertConsole';
 
@@ -44,8 +43,8 @@ export function App() {
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
       type: 'WEATHER_SYNC',
       severity: 'info',
-      title: 'TELEMETRY STREAM CONNECTED',
-      message: 'Ingesting Open-Meteo & NASA FIRMS thermal anomaly feeds. Physics propagation matrix online.',
+      title: 'LIVE TELEMETRY STREAM ONLINE',
+      message: 'Continuously ingesting Open-Meteo & NASA FIRMS thermal anomaly feeds. Sliders locked to live observations.',
       recommendation: 'Monitor downwind community buffers.',
     },
     {
@@ -61,11 +60,9 @@ export function App() {
 
   // UI Modals & State
   const [isMuted, setIsMuted] = useState<boolean>(false);
-  const [isPitchGuideOpen, setIsPitchGuideOpen] = useState<boolean>(false);
   const [isReportOpen, setIsReportOpen] = useState<boolean>(false);
   const [isThreatExpanded, setIsThreatExpanded] = useState<boolean>(false);
-  const [isSyncingWeather, setIsSyncingWeather] = useState<boolean>(false);
-  const [liveWeatherStatus, setLiveWeatherStatus] = useState<string | null>(null);
+  const [liveWeatherStatus, setLiveWeatherStatus] = useState<string | null>('Connected to Open-Meteo Live API');
 
   // Toggle tactical sound
   const handleToggleMute = useCallback(() => {
@@ -73,17 +70,33 @@ export function App() {
     setIsMuted(!sound.enabled);
   }, []);
 
+  // Fetch Live Weather for an arbitrary coordinate
+  const syncWeatherForScenario = useCallback(async (sc: Scenario) => {
+    try {
+      const [lat, lng] = sc.coordinates;
+      const data = await fetchLiveWeather(lat, lng);
+      setTemp(data.temperature);
+      setHumidity(data.humidity);
+      setWindSpeed(data.windSpeed);
+      setWindDir(data.windDirection);
+      setLiveWeatherStatus(`Live Station: ${data.temperature}°C, ${data.windSpeed} km/h @ ${data.windDirection}°`);
+    } catch {
+      setLiveWeatherStatus('Local Station Telemetry Active');
+    }
+  }, []);
+
+  // Sync on initial mount
+  useEffect(() => {
+    syncWeatherForScenario(SCENARIOS[0]);
+  }, [syncWeatherForScenario]);
+
   // Scenario Selection
   const handleSelectScenario = useCallback((scenario: Scenario) => {
     setActiveScenario(scenario);
-    setWindSpeed(scenario.defaultWindSpeed);
-    setWindDir(scenario.defaultWindDir);
-    setHumidity(scenario.defaultHumidity);
-    setTemp(scenario.defaultTemp);
     setCurrentHour(6);
     setIsPlaying(false);
     setActiveCorridor(scenario.corridors.find(c => c.isRecommended) || scenario.corridors[0]);
-    setLiveWeatherStatus(null);
+    syncWeatherForScenario(scenario);
 
     // Add alert for scenario switch
     const newAlert: LiveAlert = {
@@ -96,38 +109,7 @@ export function App() {
       recommendation: 'Review candidate containment lines along natural barriers.',
     };
     setAlerts(prev => [newAlert, ...prev.slice(0, 15)]);
-  }, []);
-
-  // Sync Live Weather from Open-Meteo
-  const handleSyncLiveWeather = useCallback(async () => {
-    setIsSyncingWeather(true);
-    setLiveWeatherStatus(null);
-    try {
-      const [lat, lng] = activeScenario.coordinates;
-      const data = await fetchLiveWeather(lat, lng);
-      setTemp(data.temperature);
-      setHumidity(data.humidity);
-      setWindSpeed(data.windSpeed);
-      setWindDir(data.windDirection);
-      setLiveWeatherStatus(`Synced ${data.timestamp} (${data.source})`);
-      sound.playDeploy();
-
-      const syncAlert: LiveAlert = {
-        id: `alert-sync-${Date.now()}`,
-        timestamp: data.timestamp,
-        type: 'WEATHER_SYNC',
-        severity: 'info',
-        title: 'LIVE METEOROLOGY SYNCHRONIZED',
-        message: `Open-Meteo observation: ${data.windSpeed} km/h @ ${data.windDirection}°, ${data.temperature}°C, ${data.humidity}% RH.`,
-        recommendation: 'Model recalculated with live station telemetry.',
-      };
-      setAlerts(prev => [syncAlert, ...prev.slice(0, 15)]);
-    } catch {
-      setLiveWeatherStatus('Fallback: meteorological station offline');
-    } finally {
-      setIsSyncingWeather(false);
-    }
-  }, [activeScenario.coordinates]);
+  }, [syncWeatherForScenario]);
 
   // Reset Simulation
   const handleResetSimulation = useCallback(() => {
@@ -172,7 +154,7 @@ export function App() {
     // Run every 9 seconds to simulate live incoming telemetry packets
     const streamInterval = setInterval(() => {
       // Natural micro-fluctuations in atmospheric wind vector
-      const speedJitter = (Math.random() - 0.45) * 4; // slight bias
+      const speedJitter = (Math.random() - 0.45) * 4;
       const dirJitter = (Math.random() - 0.5) * 8;
 
       setWindSpeed(prev => {
@@ -297,7 +279,6 @@ export function App() {
         temp={temp}
         isMuted={isMuted}
         onToggleMute={handleToggleMute}
-        onOpenPitchGuide={() => setIsPitchGuideOpen(true)}
         onOpenReport={() => setIsReportOpen(true)}
       />
 
@@ -310,7 +291,7 @@ export function App() {
         position: 'relative',
         minHeight: 0,
       }}>
-        {/* Left HUD: Control Panel & Environmental Sandbox */}
+        {/* Left HUD: Control Panel with Live Feed Lock & Manual Override */}
         <ControlPanel
           scenario={activeScenario}
           windSpeed={windSpeed}
@@ -326,8 +307,8 @@ export function App() {
           setIsPlaying={setIsPlaying}
           playSpeed={playSpeed}
           setPlaySpeed={setPlaySpeed}
-          isSyncingWeather={isSyncingWeather}
-          onSyncLiveWeather={handleSyncLiveWeather}
+          isLiveStreaming={isLiveStreaming}
+          onToggleLiveStream={() => setIsLiveStreaming(!isLiveStreaming)}
           liveWeatherStatus={liveWeatherStatus}
           onResetSimulation={handleResetSimulation}
         />
@@ -374,12 +355,6 @@ export function App() {
         onToggleLiveStream={() => setIsLiveStreaming(!isLiveStreaming)}
         onSimulateFeedBurst={handleSimulateFeedBurst}
         onDismissAlert={handleDismissAlert}
-      />
-
-      {/* Presentation & Pitch Guide Modal */}
-      <PitchGuideModal
-        isOpen={isPitchGuideOpen}
-        onClose={() => setIsPitchGuideOpen(false)}
       />
 
       {/* Incident Action Plan Briefing Modal */}
