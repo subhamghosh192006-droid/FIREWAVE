@@ -53,10 +53,10 @@ export const TacticalMap: React.FC<TacticalMapProps> = ({
     // Custom tactical zoom control on top right
     L.control.zoom({ position: 'topright' }).addTo(map);
 
-    // Initial base tile layer (CartoDB Dark Matter)
-    const darkTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      maxZoom: 19,
-      subdomains: 'abcd',
+    // Initial base tile layer (ArcGIS Dark Gray Base - 100% Free, No API Key Required)
+    const darkTiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 18,
+      attribution: 'Esri, HERE, Garmin',
     }).addTo(map);
     tileLayerRef.current = darkTiles;
 
@@ -91,20 +91,16 @@ export const TacticalMap: React.FC<TacticalMapProps> = ({
 
     map.removeLayer(tileLayerRef.current);
 
-    let newUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-    let subdomains = 'abcd';
+    let newUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}';
 
     if (baseMap === 'satellite') {
       newUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
-      subdomains = '';
     } else if (baseMap === 'topo') {
-      newUrl = 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png';
-      subdomains = 'abc';
+      newUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}';
     }
 
     const newTiles = L.tileLayer(newUrl, {
       maxZoom: 18,
-      subdomains: subdomains || undefined,
     }).addTo(map);
 
     tileLayerRef.current = newTiles;
