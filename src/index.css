@@ -1,0 +1,266 @@
+:root {
+  --bg-dark: #070b13;
+  --bg-card: rgba(14, 23, 38, 0.78);
+  --bg-card-hover: rgba(20, 32, 54, 0.9);
+  --border-subtle: rgba(70, 130, 240, 0.18);
+  --border-active: rgba(0, 229, 255, 0.5);
+  --primary-cyan: #00e5ff;
+  --primary-green: #00e676;
+  --primary-orange: #ff9100;
+  --primary-red: #ff3d00;
+  --primary-purple: #d500f9;
+  --text-main: #f0f4fc;
+  --text-muted: #889bb5;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: 'Rajdhani', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body.dark-tactical {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  height: 100vh;
+  width: 100vw;
+  user-select: none;
+}
+
+/* Custom Tactical Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(10, 16, 26, 0.8);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(70, 130, 240, 0.35);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-cyan);
+}
+
+/* Typography Helpers */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Glassmorphism Panel */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+}
+
+.glass-panel-glow {
+  border-color: var(--border-active);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.15), 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+}
+
+/* Radar Pulse / Hotspot Flame Animation */
+@keyframes firePulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(255, 61, 0, 0.7);
+  }
+  70% {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 14px rgba(255, 61, 0, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(255, 61, 0, 0);
+  }
+}
+
+.hotspot-pulse-marker {
+  width: 22px;
+  height: 22px;
+  background: radial-gradient(circle, #ffeb3b 10%, #ff5722 60%, #b71c1c 100%);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  animation: firePulse 1.8s infinite;
+  cursor: pointer;
+}
+
+/* Tactical Leaflet Map Overrides */
+.leaflet-container {
+  background-color: #0b111e !important;
+  font-family: var(--font-sans) !important;
+  outline: none;
+}
+
+.leaflet-popup-content-wrapper {
+  background: rgba(12, 20, 34, 0.94) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(0, 229, 255, 0.35) !important;
+  border-radius: 8px !important;
+  color: #fff !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6) !important;
+  padding: 2px !important;
+}
+
+.leaflet-popup-tip {
+  background: rgba(12, 20, 34, 0.94) !important;
+  border: 1px solid rgba(0, 229, 255, 0.35) !important;
+}
+
+.leaflet-popup-close-button {
+  color: #889bb5 !important;
+  padding: 6px !important;
+}
+.leaflet-popup-close-button:hover {
+  color: #00e5ff !important;
+}
+
+/* Button & Controls Glow */
+.btn-tactical {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(22, 36, 60, 0.7);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  color: var(--text-main);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-tactical:hover {
+  background: rgba(32, 54, 90, 0.9);
+  border-color: var(--primary-cyan);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.25);
+  color: #fff;
+}
+
+.btn-primary-tactical {
+  background: linear-gradient(135deg, #00b0ff 0%, #00e5ff 100%);
+  color: #06101e;
+  border: none;
+  font-weight: 700;
+}
+
+.btn-primary-tactical:hover {
+  background: linear-gradient(135deg, #00e5ff 0%, #69f0ae 100%);
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.45);
+  color: #040912;
+}
+
+.btn-danger-tactical {
+  background: linear-gradient(135deg, #d50000 0%, #ff3d00 100%);
+  color: #fff;
+  border: none;
+}
+.btn-danger-tactical:hover {
+  background: linear-gradient(135deg, #ff1744 0%, #ff6d00 100%);
+  box-shadow: 0 0 18px rgba(255, 61, 0, 0.45);
+}
+
+/* Range Input Slider */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: rgba(30, 48, 76, 0.9);
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--primary-cyan);
+  border: 2px solid #fff;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.6);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* Badge styling */
+.badge-tactical {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-threatened {
+  background: rgba(255, 23, 68, 0.2);
+  color: #ff5252;
+  border: 1px solid rgba(255, 23, 68, 0.45);
+}
+
+.badge-alert {
+  background: rgba(255, 145, 0, 0.2);
+  color: #ffab40;
+  border: 1px solid rgba(255, 145, 0, 0.45);
+}
+
+.badge-safe {
+  background: rgba(0, 230, 118, 0.2);
+  color: #69f0ae;
+  border: 1px solid rgba(0, 230, 118, 0.45);
+}
+
+.badge-cyan {
+  background: rgba(0, 229, 255, 0.15);
+  color: var(--primary-cyan);
+  border: 1px solid rgba(0, 229, 255, 0.35);
+}
+
+/* Ticker Animation */
+@keyframes tickerTape {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.ticker-wrap {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ticker-content {
+  display: inline-block;
+  animation: tickerTape 35s linear infinite;
+}
+
+.ticker-content:hover {
+  animation-play-state: paused;
+}
