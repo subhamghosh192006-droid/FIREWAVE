@@ -291,15 +291,12 @@ export function App() {
         position: 'relative',
         minHeight: 0,
       }}>
-        {/* Left HUD: Control Panel with Live Feed Lock & Manual Override */}
+        {/* Left HUD: Pure Telemetry Values & Timeline Control */}
         <ControlPanel
           scenario={activeScenario}
           windSpeed={windSpeed}
-          setWindSpeed={setWindSpeed}
           windDir={windDir}
-          setWindDir={setWindDir}
           humidity={humidity}
-          setHumidity={setHumidity}
           temp={temp}
           currentHour={currentHour}
           setCurrentHour={setCurrentHour}
