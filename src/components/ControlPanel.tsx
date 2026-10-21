@@ -1,5 +1,4 @@
-import React from 'react';
-import { Wind, Droplets, Play, Pause, RotateCcw, Mountain, Thermometer, Radio, Lock, Unlock } from 'lucide-react';
+import { Play, Pause, RotateCcw, Mountain, Radio, Sliders } from 'lucide-react';
 import type { Scenario } from '../types/fireweave';
 import { sound } from '../services/soundService';
 
@@ -46,9 +45,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 }) => {
   // Fire danger rating computation
   const getDangerRating = () => {
-    if (windSpeed > 40 && humidity < 18) return { label: 'CATASTROPHIC', color: '#ff1744' };
+    if (windSpeed > 40 && humidity < 18) return { label: 'CRITICAL', color: '#ff3d00' };
     if (windSpeed > 28 || humidity < 22) return { label: 'EXTREME', color: '#ff5252' };
-    if (windSpeed > 18 || humidity < 35) return { label: 'HIGH RISK', color: '#ff9100' };
+    if (windSpeed > 18 || humidity < 35) return { label: 'ELEVATED', color: '#ffab40' };
     return { label: 'MODERATE', color: '#00e676' };
   };
 
@@ -70,56 +69,65 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       width: '320px',
       maxHeight: 'calc(100vh - 120px)',
       overflowY: 'auto',
-      padding: '14px',
+      padding: '12px',
       display: 'flex',
       flexDirection: 'column',
-      gap: '14px',
+      gap: '12px',
       zIndex: 10,
+      border: '1px solid rgba(40, 70, 110, 0.4)',
     }}>
       {/* Zone Overview Profile */}
       <div style={{
-        background: 'rgba(9, 16, 28, 0.75)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: '8px',
-        padding: '10px 12px',
+        background: 'rgba(8, 14, 24, 0.85)',
+        border: '1px solid rgba(40, 70, 110, 0.35)',
+        borderRadius: '4px',
+        padding: '10px',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-          <span className="font-display" style={{ fontSize: '11px', color: 'var(--primary-cyan)', fontWeight: 700 }}>
-            TERRAIN & FUEL PROFILE
+          <span className="font-mono" style={{ fontSize: '10px', color: '#00e5ff', fontWeight: 600, letterSpacing: '0.06em' }}>
+            SECTOR TELEMETRY // 01
           </span>
-          <span className="badge-tactical" style={{ background: `${danger.color}20`, color: danger.color, border: `1px solid ${danger.color}50` }}>
-            {danger.label}
+          <span style={{
+            background: `${danger.color}18`,
+            color: danger.color,
+            border: `1px solid ${danger.color}60`,
+            fontSize: '9px',
+            fontFamily: 'var(--font-mono)',
+            padding: '1px 6px',
+            borderRadius: '2px',
+            fontWeight: 700,
+          }}>
+            RATING: {danger.label}
           </span>
         </div>
-        <div style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>
-          {scenario.name}
+        <div className="font-display" style={{ fontSize: '15px', fontWeight: 700, color: '#fff', letterSpacing: '0.04em' }}>
+          {scenario.name.toUpperCase()}
         </div>
-        <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px', lineHeight: 1.4 }}>
+        <div style={{ fontSize: '11px', color: '#889bb5', marginTop: '2px', lineHeight: 1.35 }}>
           {scenario.biome}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', fontSize: '11px', color: '#b0bec5' }}>
-          <Mountain size={13} color="#00e5ff" />
-          <span>{scenario.elevationRange}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', fontSize: '10px', color: '#90a4ae', fontFamily: 'var(--font-mono)' }}>
+          <Mountain size={12} color="#00e5ff" />
+          <span>ELEV: {scenario.elevationRange}</span>
         </div>
       </div>
 
-      {/* Environmental Data Feed Box */}
+      {/* Industrial Sensor Instrument Cluster */}
       <div style={{
-        background: 'rgba(9, 16, 28, 0.75)',
-        border: '1px solid',
-        borderColor: isLiveStreaming ? 'var(--primary-cyan)' : 'var(--border-subtle)',
-        borderRadius: '8px',
-        padding: '12px',
+        background: 'rgba(8, 14, 24, 0.85)',
+        border: '1px solid rgba(40, 70, 110, 0.35)',
+        borderRadius: '4px',
+        padding: '10px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '12px',
+        gap: '10px',
       }}>
-        {/* Feed Mode Toggle Header */}
+        {/* Telemetry Switch Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Radio size={14} color={isLiveStreaming ? '#00e5ff' : '#889bb5'} />
-            <span className="font-display" style={{ fontSize: '12px', color: '#fff', fontWeight: 700 }}>
-              {isLiveStreaming ? 'LIVE TELEMETRY FEED' : 'MANUAL WHAT-IF OVERRIDE'}
+            <Radio size={13} color={isLiveStreaming ? '#00e5ff' : '#889bb5'} />
+            <span className="font-mono" style={{ fontSize: '10px', color: '#e0e6ed', fontWeight: 700, letterSpacing: '0.05em' }}>
+              ATMOSPHERIC SENSOR INGEST
             </span>
           </div>
 
@@ -129,70 +137,67 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               onToggleLiveStream();
             }}
             style={{
-              background: isLiveStreaming ? 'rgba(0, 229, 255, 0.15)' : 'rgba(255, 171, 64, 0.2)',
+              background: isLiveStreaming ? 'rgba(0, 229, 255, 0.12)' : 'rgba(255, 171, 64, 0.15)',
               border: '1px solid',
-              borderColor: isLiveStreaming ? 'var(--primary-cyan)' : '#ffab40',
-              color: isLiveStreaming ? 'var(--primary-cyan)' : '#ffab40',
-              borderRadius: '4px',
+              borderColor: isLiveStreaming ? 'rgba(0, 229, 255, 0.4)' : '#ffab40',
+              color: isLiveStreaming ? '#00e5ff' : '#ffab40',
+              borderRadius: '2px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: '4px',
-              padding: '3px 8px',
-              fontSize: '10px',
+              padding: '2px 7px',
+              fontSize: '9px',
               fontFamily: 'var(--font-mono)',
               fontWeight: 700,
             }}
-            title={isLiveStreaming ? 'Click to enable manual slider adjustments' : 'Click to lock sliders back to live feed'}
           >
-            {isLiveStreaming ? <Lock size={11} /> : <Unlock size={11} />}
-            <span>{isLiveStreaming ? 'LIVE FEED ON' : 'MANUAL MODE'}</span>
+            {isLiveStreaming ? <Radio size={10} /> : <Sliders size={10} />}
+            <span>{isLiveStreaming ? 'LIVE INGEST' : 'MANUAL'}</span>
           </button>
         </div>
 
-        {/* Live Feed Status Indicator Banner */}
+        {/* Telemetry Status Line */}
         <div style={{
-          background: isLiveStreaming ? 'rgba(0, 230, 118, 0.1)' : 'rgba(255, 171, 64, 0.1)',
-          border: `1px solid ${isLiveStreaming ? 'rgba(0, 230, 118, 0.3)' : 'rgba(255, 171, 64, 0.3)'}`,
-          borderRadius: '5px',
-          padding: '6px 8px',
-          fontSize: '10px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
+          background: 'rgba(4, 8, 14, 0.95)',
+          borderLeft: `2px solid ${isLiveStreaming ? '#00e676' : '#ffab40'}`,
+          padding: '4px 8px',
+          fontSize: '9px',
+          fontFamily: 'var(--font-mono)',
+          color: isLiveStreaming ? '#00e676' : '#ffab40',
         }}>
-          <span style={{
-            width: '6px',
-            height: '6px',
-            borderRadius: '50%',
-            background: isLiveStreaming ? '#00e676' : '#ffab40',
-            boxShadow: `0 0 6px ${isLiveStreaming ? '#00e676' : '#ffab40'}`,
-          }} />
-          <span style={{ color: isLiveStreaming ? '#00e676' : '#ffab40', fontFamily: 'var(--font-mono)' }}>
-            {isLiveStreaming
-              ? (liveWeatherStatus || 'Streaming Open-Meteo & NASA Telemetry')
-              : 'Manual adjustment active. Live feed paused.'}
-          </span>
+          {isLiveStreaming
+            ? (liveWeatherStatus || 'LIVE STREAM: OPEN-METEO GFS + NASA VIIRS')
+            : 'SIMULATION OVERRIDE: SLIDERS UNLOCKED'}
         </div>
 
-        {/* Ambient Temperature Display */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <Thermometer size={13} color="#ffab40" /> Surface Temperature
-          </span>
-          <span className="font-mono" style={{ fontSize: '12px', color: '#ffab40', fontWeight: 600 }}>
-            {temp}°C
-          </span>
+        {/* Digital Readout Matrix */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+          {/* Surface Temperature */}
+          <div style={{ background: 'rgba(12, 18, 30, 0.65)', border: '1px solid rgba(255,255,255,0.05)', padding: '6px', borderRadius: '3px' }}>
+            <div style={{ fontSize: '9px', color: '#78909c', fontFamily: 'var(--font-mono)' }}>TEMPERATURE</div>
+            <div className="font-mono" style={{ fontSize: '14px', fontWeight: 700, color: '#ffab40', marginTop: '2px' }}>
+              {temp.toFixed(1)}°C
+            </div>
+          </div>
+
+          {/* Fuel Moisture */}
+          <div style={{ background: 'rgba(12, 18, 30, 0.65)', border: '1px solid rgba(255,255,255,0.05)', padding: '6px', borderRadius: '3px' }}>
+            <div style={{ fontSize: '9px', color: '#78909c', fontFamily: 'var(--font-mono)' }}>HUMIDITY (RH)</div>
+            <div className="font-mono" style={{ fontSize: '14px', fontWeight: 700, color: '#00e676', marginTop: '2px' }}>
+              {humidity}% RH
+            </div>
+          </div>
         </div>
 
         {/* Wind Speed Control */}
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-            <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <Wind size={13} color="#00e5ff" /> Wind Velocity {isLiveStreaming && '🔒'}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+            <span style={{ fontSize: '10px', color: '#90a4ae', fontFamily: 'var(--font-mono)' }}>
+              WIND VELOCITY {isLiveStreaming ? '[AUTO]' : '[MANUAL]'}
             </span>
-            <span className="font-mono" style={{ fontSize: '12px', color: '#00e5ff', fontWeight: 600 }}>
-              {windSpeed} km/h
+            <span className="font-mono" style={{ fontSize: '12px', color: '#00e5ff', fontWeight: 700 }}>
+              {windSpeed} KM/H
             </span>
           </div>
           <input
@@ -206,20 +211,20 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               if (!isLiveStreaming) setWindSpeed(Number(e.target.value));
             }}
             style={{
-              opacity: isLiveStreaming ? 0.45 : 1,
+              opacity: isLiveStreaming ? 0.35 : 1,
               cursor: isLiveStreaming ? 'not-allowed' : 'pointer',
             }}
           />
         </div>
 
-        {/* Wind Direction Control & Cardinal Presets */}
+        {/* Wind Bearing Origin */}
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-              Wind Bearing Origin {isLiveStreaming && '🔒'}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+            <span style={{ fontSize: '10px', color: '#90a4ae', fontFamily: 'var(--font-mono)' }}>
+              WIND BEARING {isLiveStreaming ? '[AUTO]' : '[MANUAL]'}
             </span>
-            <span className="font-mono" style={{ fontSize: '12px', color: '#ffab40', fontWeight: 600 }}>
-              {windDir}° (Heading {(windDir + 180) % 360}°)
+            <span className="font-mono" style={{ fontSize: '12px', color: '#ffab40', fontWeight: 700 }}>
+              {windDir}° (HDG {(windDir + 180) % 360}°)
             </span>
           </div>
           <input
@@ -233,12 +238,12 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               if (!isLiveStreaming) setWindDir(Number(e.target.value));
             }}
             style={{
-              opacity: isLiveStreaming ? 0.45 : 1,
+              opacity: isLiveStreaming ? 0.35 : 1,
               cursor: isLiveStreaming ? 'not-allowed' : 'pointer',
             }}
           />
-          {/* Quick 8 Cardinal Buttons */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '3px', marginTop: '6px' }}>
+          {/* Quick Cardinal Selector */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '2px', marginTop: '4px' }}>
             {cardinalPresets.map((card) => (
               <button
                 key={card.label}
@@ -250,16 +255,16 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   }
                 }}
                 style={{
-                  background: Math.abs(windDir - card.deg) < 22 ? 'rgba(0, 229, 255, 0.25)' : 'rgba(20, 32, 50, 0.6)',
-                  borderColor: Math.abs(windDir - card.deg) < 22 ? 'var(--primary-cyan)' : 'var(--border-subtle)',
+                  background: Math.abs(windDir - card.deg) < 22 ? 'rgba(0, 229, 255, 0.25)' : 'rgba(16, 24, 38, 0.6)',
+                  borderColor: Math.abs(windDir - card.deg) < 22 ? '#00e5ff' : 'rgba(40, 70, 110, 0.3)',
                   border: '1px solid',
-                  borderRadius: '3px',
-                  color: Math.abs(windDir - card.deg) < 22 ? '#fff' : 'var(--text-muted)',
+                  borderRadius: '2px',
+                  color: Math.abs(windDir - card.deg) < 22 ? '#fff' : '#607d8b',
                   fontSize: '9px',
                   fontFamily: 'var(--font-mono)',
-                  padding: '3px 0',
+                  padding: '2px 0',
                   cursor: isLiveStreaming ? 'not-allowed' : 'pointer',
-                  opacity: isLiveStreaming ? 0.45 : 1,
+                  opacity: isLiveStreaming ? 0.35 : 1,
                 }}
               >
                 {card.label}
@@ -270,11 +275,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
         {/* Humidity Control */}
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-            <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <Droplets size={13} color="#69f0ae" /> Fuel Humidity {isLiveStreaming && '🔒'}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+            <span style={{ fontSize: '10px', color: '#90a4ae', fontFamily: 'var(--font-mono)' }}>
+              FUEL MOISTURE INDEX
             </span>
-            <span className="font-mono" style={{ fontSize: '12px', color: '#69f0ae', fontWeight: 600 }}>
+            <span className="font-mono" style={{ fontSize: '12px', color: '#00e676', fontWeight: 700 }}>
               {humidity}% RH
             </span>
           </div>
@@ -289,7 +294,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               if (!isLiveStreaming) setHumidity(Number(e.target.value));
             }}
             style={{
-              opacity: isLiveStreaming ? 0.45 : 1,
+              opacity: isLiveStreaming ? 0.35 : 1,
               cursor: isLiveStreaming ? 'not-allowed' : 'pointer',
             }}
           />
@@ -298,16 +303,16 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
       {/* Simulation Timeline & Scrubbing */}
       <div style={{
-        background: 'rgba(9, 16, 28, 0.75)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: '8px',
-        padding: '12px',
+        background: 'rgba(8, 14, 24, 0.85)',
+        border: '1px solid rgba(40, 70, 110, 0.35)',
+        borderRadius: '4px',
+        padding: '10px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '10px',
+        gap: '8px',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span className="font-display" style={{ fontSize: '12px', color: '#fff', fontWeight: 700 }}>
+          <span className="font-mono" style={{ fontSize: '10px', color: '#00e5ff', fontWeight: 700 }}>
             PROPAGATION TIMELINE
           </span>
           <span className="font-mono" style={{ fontSize: '13px', color: '#ff3d00', fontWeight: 700 }}>
@@ -328,17 +333,17 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         />
 
         {/* Timeline Playback Buttons */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', marginTop: '4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', marginTop: '2px' }}>
           <button
             className="btn-tactical"
             onClick={() => {
               sound.playClick();
               setIsPlaying(!isPlaying);
             }}
-            style={{ flex: 1, padding: '7px' }}
+            style={{ flex: 1, padding: '5px', fontSize: '11px' }}
           >
-            {isPlaying ? <Pause size={14} color="#ffab40" /> : <Play size={14} color="#00e5ff" />}
-            <span>{isPlaying ? 'PAUSE' : 'PLAY'}</span>
+            {isPlaying ? <Pause size={13} color="#ffab40" /> : <Play size={13} color="#00e5ff" />}
+            <span style={{ fontFamily: 'var(--font-mono)' }}>{isPlaying ? 'PAUSE' : 'RUN'}</span>
           </button>
 
           <button
@@ -348,9 +353,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               onResetSimulation();
             }}
             title="Reset simulation to T+1h"
-            style={{ padding: '7px 10px' }}
+            style={{ padding: '5px 8px' }}
           >
-            <RotateCcw size={14} color="#889bb5" />
+            <RotateCcw size={13} color="#889bb5" />
           </button>
 
           {/* Speed Toggles */}
@@ -363,18 +368,18 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   setPlaySpeed(speed);
                 }}
                 style={{
-                  background: playSpeed === speed ? 'var(--primary-cyan)' : 'rgba(20, 32, 50, 0.6)',
-                  color: playSpeed === speed ? '#06101e' : 'var(--text-muted)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: '3px',
-                  padding: '4px 6px',
-                  fontSize: '10px',
+                  background: playSpeed === speed ? 'rgba(0, 229, 255, 0.25)' : 'rgba(16, 24, 38, 0.6)',
+                  color: playSpeed === speed ? '#00e5ff' : '#607d8b',
+                  border: '1px solid rgba(40, 70, 110, 0.4)',
+                  borderRadius: '2px',
+                  padding: '3px 5px',
+                  fontSize: '9px',
                   fontFamily: 'var(--font-mono)',
                   cursor: 'pointer',
                   fontWeight: 700,
                 }}
               >
-                {speed}x
+                {speed}X
               </button>
             ))}
           </div>

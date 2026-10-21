@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, Radio, X, Zap } from 'lucide-react';
+import { X, ChevronDown, ChevronUp } from 'lucide-react';
 import type { LiveAlert } from '../types/alerts';
 import { sound } from '../services/soundService';
 
@@ -18,219 +18,226 @@ export const LiveAlertConsole = ({
   onSimulateFeedBurst,
   onDismissAlert,
 }: LiveAlertConsoleProps) => {
-  const [isOpen, setIsOpen] = useState<boolean>(true);
-  const [filter, setFilter] = useState<'all' | 'critical' | 'adaptation'>('all');
-
-  const filteredAlerts = alerts.filter(a => {
-    if (filter === 'critical') return a.severity === 'critical';
-    if (filter === 'adaptation') return a.type === 'CONTAINMENT_ADAPTATION';
-    return true;
-  });
+  const [isExpanded, setIsExpanded] = useState<boolean>(true);
+  const [activeTab, setActiveTab] = useState<'all' | 'critical' | 'telemetry'>('all');
 
   const criticalCount = alerts.filter(a => a.severity === 'critical').length;
 
+  const displayAlerts = alerts.filter(a => {
+    if (activeTab === 'critical') return a.severity === 'critical';
+    if (activeTab === 'telemetry') return a.type === 'WEATHER_SYNC' || a.type === 'CONTAINMENT_ADAPTATION';
+    return true;
+  });
+
   return (
-    <div className="glass-panel" style={{
+    <div style={{
       position: 'fixed',
-      bottom: '18px',
-      right: '18px',
-      width: isOpen ? '420px' : 'auto',
-      maxHeight: isOpen ? '480px' : 'auto',
-      display: 'flex',
-      flexDirection: 'column',
-      zIndex: 2000,
-      borderRadius: '10px',
+      bottom: '12px',
+      right: '12px',
+      width: isExpanded ? '460px' : '320px',
+      background: 'rgba(8, 12, 20, 0.94)',
+      backdropFilter: 'blur(16px)',
+      border: '1px solid rgba(40, 70, 110, 0.45)',
+      borderRadius: '4px',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255,255,255,0.06)',
+      zIndex: 1500,
+      fontFamily: 'var(--font-mono)',
+      fontSize: '11px',
       overflow: 'hidden',
-      border: '1px solid var(--border-active)',
-      boxShadow: '0 12px 40px rgba(0, 0, 0, 0.75)',
-      transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+      transition: 'width 0.2s ease',
     }}>
-      {/* Console Top Header */}
+      {/* Avionics Console Bar Header */}
       <div style={{
-        padding: '10px 14px',
-        background: 'rgba(10, 18, 32, 0.95)',
-        borderBottom: isOpen ? '1px solid var(--border-subtle)' : 'none',
+        padding: '6px 10px',
+        background: 'linear-gradient(90deg, rgba(14, 22, 36, 0.95) 0%, rgba(10, 16, 26, 0.95) 100%)',
+        borderBottom: '1px solid rgba(40, 70, 110, 0.35)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        gap: '10px',
+        userSelect: 'none',
       }}>
-        <div
-          onClick={() => {
-            sound.playClick();
-            setIsOpen(!isOpen);
-          }}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', flex: 1 }}
-        >
-          <div style={{ position: 'relative' }}>
-            <Radio size={16} color={isLiveStreaming ? '#00e5ff' : '#889bb5'} />
-            {isLiveStreaming && (
-              <span style={{
-                position: 'absolute',
-                top: '-2px',
-                right: '-2px',
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                background: '#00e676',
-                boxShadow: '0 0 8px #00e676',
-              }} />
-            )}
+        {/* Signal & Feed Status */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <span style={{
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              background: isLiveStreaming ? '#00e676' : '#ff9100',
+              boxShadow: isLiveStreaming ? '0 0 6px #00e676' : '0 0 6px #ff9100',
+              animation: isLiveStreaming ? 'pulse 2s infinite' : 'none',
+            }} />
+            <span style={{ color: '#00e5ff', fontWeight: 600, fontSize: '10px', letterSpacing: '0.08em' }}>
+              SAT-DOWNLINK // {isLiveStreaming ? 'LIVE' : 'HOLD'}
+            </span>
           </div>
-          <div>
-            <div className="font-display" style={{ fontSize: '12px', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              LIVE TELEMETRY & ALERTS
-              {criticalCount > 0 && (
-                <span className="badge-tactical badge-threatened" style={{ fontSize: '9px', padding: '1px 5px' }}>
-                  {criticalCount} CRITICAL
-                </span>
-              )}
-            </div>
-            <div style={{ fontSize: '10px', color: isLiveStreaming ? '#00e676' : 'var(--text-muted)' }}>
-              {isLiveStreaming ? '● AUTO-ANALYZING INCOMING STREAM' : 'FEED PAUSED'}
-            </div>
-          </div>
+
+          <span style={{ color: 'rgba(120, 150, 180, 0.4)' }}>|</span>
+
+          <span style={{ fontSize: '9px', color: '#889bb5' }}>
+            FREQ: 137.91 MHz
+          </span>
         </div>
 
-        {/* Live Controls */}
+        {/* Console Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {criticalCount > 0 && (
+            <span style={{
+              background: 'rgba(255, 23, 68, 0.15)',
+              border: '1px solid rgba(255, 23, 68, 0.4)',
+              color: '#ff5252',
+              padding: '1px 5px',
+              borderRadius: '2px',
+              fontSize: '9px',
+              fontWeight: 700,
+            }}>
+              {criticalCount} CRIT
+            </span>
+          )}
+
           <button
-            className="btn-tactical"
-            onClick={(e) => {
-              e.stopPropagation();
+            onClick={() => {
               sound.playClick();
               onToggleLiveStream();
             }}
             style={{
-              padding: '4px 8px',
-              fontSize: '10px',
-              background: isLiveStreaming ? 'rgba(0, 230, 118, 0.2)' : 'rgba(255,255,255,0.06)',
-              borderColor: isLiveStreaming ? '#00e676' : 'var(--border-subtle)',
-              color: isLiveStreaming ? '#00e676' : 'var(--text-muted)',
+              background: 'transparent',
+              border: '1px solid rgba(0, 229, 255, 0.25)',
+              color: isLiveStreaming ? '#00e5ff' : '#ffab40',
+              padding: '2px 6px',
+              borderRadius: '2px',
+              fontSize: '9px',
+              cursor: 'pointer',
+              fontFamily: 'var(--font-mono)',
             }}
-            title={isLiveStreaming ? 'Pause live feed' : 'Resume live feed'}
+            title={isLiveStreaming ? 'Pause automated stream' : 'Resume live stream'}
           >
-            {isLiveStreaming ? 'STREAMING' : 'RESUME'}
+            {isLiveStreaming ? 'STREAMING' : 'MUTED'}
           </button>
 
           <button
-            className="btn-tactical btn-primary-tactical"
-            onClick={(e) => {
-              e.stopPropagation();
+            onClick={() => {
+              sound.playClick();
               onSimulateFeedBurst();
             }}
-            style={{ padding: '4px 8px', fontSize: '10px' }}
-            title="Simulate sudden wind gust or new satellite detection to test live alerts"
+            style={{
+              background: 'rgba(0, 229, 255, 0.12)',
+              border: '1px solid rgba(0, 229, 255, 0.4)',
+              color: '#00e5ff',
+              padding: '2px 6px',
+              borderRadius: '2px',
+              fontSize: '9px',
+              cursor: 'pointer',
+              fontFamily: 'var(--font-mono)',
+            }}
+            title="Inject simulated satellite pass telemetry anomaly"
           >
-            <Zap size={12} />
-            <span>TEST BURST</span>
+            INJECT GUST
+          </button>
+
+          <button
+            onClick={() => {
+              sound.playClick();
+              setIsExpanded(!isExpanded);
+            }}
+            style={{ background: 'transparent', border: 'none', color: '#889bb5', cursor: 'pointer', padding: '2px' }}
+          >
+            {isExpanded ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
           </button>
         </div>
       </div>
 
-      {/* Expanded Alert Content */}
-      {isOpen && (
-        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
-          {/* Quick Filter Tabs */}
+      {/* Main Terminal Feed */}
+      {isExpanded && (
+        <div>
+          {/* Subheader Metadata Ribbon */}
           <div style={{
-            display: 'flex',
-            padding: '6px 10px',
-            gap: '6px',
-            background: 'rgba(8, 14, 24, 0.7)',
+            padding: '4px 10px',
+            background: 'rgba(6, 10, 18, 0.8)',
             borderBottom: '1px solid rgba(255,255,255,0.04)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontSize: '9px',
+            color: '#607d8b',
           }}>
-            {(['all', 'critical', 'adaptation'] as const).map(tab => (
-              <button
-                key={tab}
-                onClick={() => {
-                  sound.playClick();
-                  setFilter(tab);
-                }}
-                style={{
-                  background: filter === tab ? 'var(--primary-cyan)' : 'transparent',
-                  color: filter === tab ? '#06101e' : 'var(--text-muted)',
-                  border: 'none',
-                  borderRadius: '4px',
-                  padding: '3px 8px',
-                  fontSize: '10px',
-                  fontFamily: 'var(--font-display)',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  cursor: 'pointer',
-                }}
+            <div>FEED: NOAA-HRRR / NASA-VIIRS-375M</div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <span
+                onClick={() => { sound.playClick(); setActiveTab('all'); }}
+                style={{ cursor: 'pointer', color: activeTab === 'all' ? '#00e5ff' : '#607d8b', fontWeight: activeTab === 'all' ? 700 : 400 }}
               >
-                {tab}
-              </button>
-            ))}
+                [ALL]
+              </span>
+              <span
+                onClick={() => { sound.playClick(); setActiveTab('critical'); }}
+                style={{ cursor: 'pointer', color: activeTab === 'critical' ? '#ff5252' : '#607d8b', fontWeight: activeTab === 'critical' ? 700 : 400 }}
+              >
+                [THREATS]
+              </span>
+              <span
+                onClick={() => { sound.playClick(); setActiveTab('telemetry'); }}
+                style={{ cursor: 'pointer', color: activeTab === 'telemetry' ? '#00e676' : '#607d8b', fontWeight: activeTab === 'telemetry' ? 700 : 400 }}
+              >
+                [CONTAINMENT]
+              </span>
+            </div>
           </div>
 
-          {/* Alert Stream List */}
+          {/* Terminal Event Stream Log */}
           <div style={{
-            padding: '10px',
+            padding: '8px 10px',
+            maxHeight: '220px',
             overflowY: 'auto',
-            maxHeight: '340px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '8px',
+            gap: '6px',
+            background: 'rgba(4, 8, 14, 0.95)',
           }}>
-            {filteredAlerts.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '24px 10px', color: 'var(--text-muted)', fontSize: '12px' }}>
-                <Bell size={24} style={{ opacity: 0.3, marginBottom: '6px' }} />
-                <div>No telemetry alerts triggered under current threshold.</div>
+            {displayAlerts.length === 0 ? (
+              <div style={{ color: '#455a64', textAlign: 'center', padding: '16px 0', fontSize: '10px' }}>
+                // TELEMETRY BUFFER NOMINAL — NO ACTIVE DEVIATIONS DETECTED //
               </div>
             ) : (
-              filteredAlerts.map(alert => {
-                const borderCol = alert.severity === 'critical'
-                  ? '#ff1744'
+              displayAlerts.map(alert => {
+                const color = alert.severity === 'critical'
+                  ? '#ff3d00'
                   : alert.severity === 'warning'
                     ? '#ffab40'
-                    : '#00e676';
+                    : alert.severity === 'success'
+                      ? '#00e676'
+                      : '#00e5ff';
 
                 return (
                   <div
                     key={alert.id}
                     style={{
-                      background: 'rgba(12, 20, 34, 0.9)',
-                      borderLeft: `3px solid ${borderCol}`,
-                      borderRadius: '0 6px 6px 0',
-                      padding: '8px 10px',
+                      borderLeft: `2px solid ${color}`,
+                      padding: '4px 6px 4px 8px',
+                      background: 'rgba(12, 18, 30, 0.65)',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '4px',
-                      fontSize: '11px',
+                      gap: '2px',
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span className="font-display" style={{ color: borderCol, fontWeight: 700, fontSize: '11px' }}>
-                        {alert.title}
+                      <span style={{ color, fontWeight: 700, fontSize: '10px' }}>
+                        [{alert.timestamp}] {alert.title}
                       </span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span className="font-mono" style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
-                          {alert.timestamp}
-                        </span>
-                        <button
-                          onClick={() => onDismissAlert(alert.id)}
-                          style={{ background: 'transparent', border: 'none', color: '#889bb5', cursor: 'pointer', padding: '1px' }}
-                        >
-                          <X size={12} />
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => onDismissAlert(alert.id)}
+                        style={{ background: 'transparent', border: 'none', color: '#546e7a', cursor: 'pointer', padding: '0 2px' }}
+                      >
+                        <X size={11} />
+                      </button>
                     </div>
 
-                    <div style={{ color: '#e0e6ed', lineHeight: 1.4 }}>
+                    <div style={{ color: '#b0bec5', fontSize: '10px', lineHeight: 1.35 }}>
                       {alert.message}
                     </div>
 
                     {alert.recommendation && (
-                      <div style={{
-                        marginTop: '2px',
-                        padding: '4px 6px',
-                        background: 'rgba(0, 229, 255, 0.08)',
-                        borderRadius: '4px',
-                        color: 'var(--primary-cyan)',
-                        fontSize: '10px',
-                      }}>
-                        <strong>AI Recommendation:</strong> {alert.recommendation}
+                      <div style={{ color: '#00e5ff', fontSize: '9px', opacity: 0.85, marginTop: '2px' }}>
+                        &gt; ACTION: {alert.recommendation}
                       </div>
                     )}
                   </div>
